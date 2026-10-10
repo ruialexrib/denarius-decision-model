@@ -55,3 +55,16 @@ Inválidos contam como erros. Consultar macro/weighted F1, precision/recall por
 classe, suporte, matriz e erros. Report scripts/report.py exclui outros datasets;
 analyze_errors.py permite revisão local. Modelos, outputs e relatórios seguem
 ignorados, mesmo quando usam dados sintéticos. Guardar notebook sem outputs.
+
+## Notebook: quick demonstration and full training
+
+QUICK_RUN=True is the notebook default: synthetic-quick-001, two training
+examples per category (140 total), one epoch, accumulation 4, one validation
+example per category for training loss and generated evaluation. HF Base is
+skipped. Dataset files are unchanged; subsets are selected deterministically
+by training_rows using the training seed. Manifests record training_sizes,
+training_rows_hashes and development_run; quick results are demonstrations.
+Set QUICK_RUN=False and restart the kernel for all 8,400 train/1,400 validation
+examples and YAML defaults. Use a fresh synthetic-XXX experiment ID. Generation
+evaluation is still sampled unless RUN_FULL_VALIDATION=True. Final tests are
+blocked in quick mode and remain reserved for a frozen full candidate.

@@ -2,6 +2,27 @@ from . import ROOT
 from .config import read_json,save_json,model_source,model_fingerprint,dataset_path
 from .prompting import example
 
+def training_rows(config, split):
+    """Select a deterministic, class-balanced development subset without changing files."""
+    if split not in ('train', 'validation'):
+        raise ValueError('Training subsets only support train and validation')
+    rows = read_json(dataset_path(f'splits/{split}.json'))
+    count = config['training'].get(f'{split}_per_category')
+    if count is None:
+        return rows
+    if type(count) is not int or count < 1:
+        raise ValueError('Examples per category must be a positive integer')
+    import random
+    rng = random.Random(config['training']['seed'])
+    selected = []
+    for category in sorted({r['category'] for r in rows}):
+        candidates = [r for r in rows if r['category'] == category]
+        if count > len(candidates):
+            raise ValueError('Requested subset exceeds available examples')
+        selected.extend(rng.sample(candidates, count))
+    rng.shuffle(selected)
+    return selected
+
 def train(config,experiment):
     if (ROOT/'outputs'/experiment/'experiment.json').exists() or (ROOT/'models'/experiment/'adapter').exists():
         raise ValueError('Experiência existente; escolher um identificador novo')
@@ -24,7 +45,8 @@ def train(config,experiment):
         if len(prefix)+len(completion)>modelcfg['max_length']: raise ValueError('Exemplo excede max_length')
         ids=prefix+completion
         return {'input_ids':ids,'attention_mask':[1]*len(ids),'labels':[-100]*len(prefix)+completion}
-    sets={s:Dataset.from_list([encode(r) for r in read_json(dataset_path(f'splits/{s}.json'))]) for s in ('train','validation')}
+    selected_rows={s:training_rows(config,s) for s in ('train','validation')}
+    sets={s:Dataset.from_list([encode(r) for r in selected_rows[s]]) for s in selected_rows}
     dtype=torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
     kwargs=dict(revision=modelcfg['revision'],local_files_only=modelcfg['local_files_only'],dtype=dtype)
     if cfg['strategy']=='qlora':
@@ -45,5 +67,9 @@ def train(config,experiment):
     manifest={'experiment_id':experiment,'configuration':config,'resolved_revision':revision,'dataset_version':stats['dataset_version'],'sizes':stats['sizes'],'seed':cfg['seed'],'timestamp':datetime.datetime.now(datetime.timezone.utc).isoformat(),'metrics':trainer.state.log_history,'versions':{p:importlib.metadata.version(p) for p in ('torch','transformers','peft','accelerate','datasets')}}
     manifest['model_fingerprint']=fingerprint
     manifest['dataset_source']='synthetic'
+    import hashlib,json
+    manifest['training_sizes']={s:len(rows) for s,rows in selected_rows.items()}
+    manifest['training_rows_hashes']={s:hashlib.sha256(json.dumps(rows,sort_keys=True).encode()).hexdigest() for s,rows in selected_rows.items()}
+    manifest['development_run']=any(cfg.get(f'{s}_per_category') is not None for s in selected_rows)
     save_json(out/'experiment.json',manifest)
     return str(adapter)

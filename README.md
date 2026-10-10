@@ -39,6 +39,8 @@ Open [the notebook](notebooks/01_train_and_evaluate.ipynb), select the Python en
 
 Final testing and export are disabled by default. Enable them after reviewing validation results. GGUF conversion and Ollama model creation are separate steps.
 
+The notebook starts with `QUICK_RUN=True`: 140 training examples, one epoch and a small validation sample for a faster demonstration. To train with all data, set `QUICK_RUN=False`, restart the kernel and run the cells again. Quick and full runs use separate experiment IDs.
+
 ## Dataset
 
 The versioned corpus contains 8,400 training examples and 1,400 examples in each validation, test and hard-test split. It is entirely synthetic and requires no database or container access.
