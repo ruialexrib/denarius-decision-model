@@ -1,0 +1,8 @@
+model_id: Qwen/Qwen3-0.6B-Base
+local_path: ~/models/Qwen3-0.6B-Base
+revision: main
+tokenizer: Qwen/Qwen3-0.6B-Base
+local_files_only: true
+max_length: 2048
+max_new_tokens: 128
+ollama_baseline: qwen3:0.6b

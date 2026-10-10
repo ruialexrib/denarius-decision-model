@@ -1,0 +1,9 @@
+seed: 42
+strategy: lora
+rank: 8
+alpha: 16
+dropout: 0.05
+epochs: 3
+learning_rate: 0.0002
+batch_size: 1
+gradient_accumulation: 16

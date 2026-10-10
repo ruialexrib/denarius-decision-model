@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "denarius-decision-model"
+version = "0.1.0"
+description = "Investigação local de classificação financeira"
+requires-python = ">=3.11,<3.15"
+dependencies = ["PyYAML>=6,<7", "pandas>=2.2,<4", "scikit-learn>=1.6,<2", "matplotlib>=3.9,<4", "transformers>=5.15,<6", "peft>=0.20,<1", "accelerate>=1.10,<2", "datasets>=4,<6", "torch>=2.8,<3", "jupyterlab>=4,<5"]
+
+[project.optional-dependencies]
+qlora = ["bitsandbytes>=0.48,<1"]
+test = ["pytest>=8,<10"]
+
+[project.scripts]
+denarius-model = "denarius_model.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

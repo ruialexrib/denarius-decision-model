@@ -1,0 +1,8 @@
+seed: 42
+generator_version: synthetic-v1
+development_eval_per_category: 2
+per_category:
+  train: 120
+  validation: 20
+  test: 20
+  hard_test: 20
